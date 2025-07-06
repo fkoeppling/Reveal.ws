@@ -2,6 +2,9 @@
   "name": "reveal-controller",
   "version": "1.0.0",
   "main": "server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
   "dependencies": {
     "dotenv": "^17.0.1",
     "express": "^4.18.0",
