@@ -2,16 +2,17 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
-    <title>Controller</title>
+    <title>Slide Controller</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      html, body {
+      html,
+      body {
         height: 100%;
         margin: 0;
         padding: 0;
         background: #18181b;
         color: #fff;
-        font-family: 'Inter', Arial, sans-serif;
+        font-family: "Inter", Arial, sans-serif;
         display: flex;
         flex-direction: column;
         min-height: 100vh;
@@ -99,29 +100,27 @@
   </head>
   <body>
     <div class="controller-container">
-      <h2>Präsentation steuern</h2>
+      <h2>Slide Controller</h2>
       <div class="button-grid">
         <div></div>
-        <button class="ctrl-btn" id="upBtn" onclick="up()" aria-label="Hoch">⬆️</button>
+        <button class="ctrl-btn" id="upBtn" onclick="up()" aria-label="Up">⬆️</button>
         <div></div>
-        <button class="ctrl-btn" id="prevBtn" onclick="prev()" aria-label="Zurück">⬅️</button>
-        <button class="ctrl-btn" id="downBtn" onclick="down()" aria-label="Runter">⬇️</button>
-        <button class="ctrl-btn" id="nextBtn" onclick="next()" aria-label="Weiter">➡️</button>
+        <button class="ctrl-btn" id="prevBtn" onclick="prev()" aria-label="Back">⬅️</button>
+        <button class="ctrl-btn" id="downBtn" onclick="down()" aria-label="Down">⬇️</button>
+        <button class="ctrl-btn" id="nextBtn" onclick="next()" aria-label="Next">➡️</button>
       </div>
-      <div class="info-bar" id="slideInfo">
-        Slide: <span id="slidePos">-</span>
-      </div>
+      <div class="info-bar" id="slideInfo">Slide: <span id="slidePos">-</span></div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      console.log("🚀 Controller-Skript gestartet")
+      console.log("Controller-Script started")
 
       let socket
       try {
         socket = io()
-        console.log("✅ Socket.IO initialisiert")
+        console.log("Socket.IO init started")
       } catch (err) {
-        console.error("❌ Socket.IO konnte nicht initialisiert werden:", err)
+        console.error("Socket.IO couldnt get initialized:", err)
       }
 
       let indexh = 0
@@ -130,25 +129,25 @@
       let maxIndexV = 0
 
       function updateInfo() {
-        document.getElementById('slidePos').textContent = `${indexh + 1}.${indexv + 1}`
-        document.getElementById('prevBtn').disabled = indexh <= 0
-        document.getElementById('nextBtn').disabled = indexh >= maxIndexH
-        document.getElementById('upBtn').disabled = indexv <= 0
-        document.getElementById('downBtn').disabled = indexv >= maxIndexV
+        document.getElementById("slidePos").textContent = `${indexh + 1}.${indexv + 1}`
+        document.getElementById("prevBtn").disabled = indexh <= 0
+        document.getElementById("nextBtn").disabled = indexh >= maxIndexH
+        document.getElementById("upBtn").disabled = indexv <= 0
+        document.getElementById("downBtn").disabled = indexv >= maxIndexV
       }
 
       socket?.emit("getSlideState")
-      console.log("📡 SlideState angefragt")
+      console.log("SlideState requested")
 
       socket?.on("slideState", (state) => {
-        console.log("📥 Controller erhält slideState:", state)
+        console.log("Controller recieved slideState:", state)
         maxIndexH = state.maxIndexH
         maxIndexV = state.maxIndexV
         updateInfo()
       })
 
       function next() {
-        console.log("➡️ Button: Weiter")
+        console.log("➡️ Button: Next")
         if (indexh < maxIndexH) {
           indexh++
           indexv = 0
@@ -159,7 +158,7 @@
       }
 
       function prev() {
-        console.log("⬅️ Button: Zurück")
+        console.log("⬅️ Button: Back")
         if (indexh > 0) {
           indexh--
           indexv = 0
@@ -170,7 +169,7 @@
       }
 
       function down() {
-        console.log("⬇️ Button: Runter")
+        console.log("⬇️ Button: Down")
         if (indexv < maxIndexV) {
           indexv++
           socket?.emit("navigate", { indexh, indexv })
@@ -179,7 +178,7 @@
       }
 
       function up() {
-        console.log("⬆️ Button: Hoch")
+        console.log("⬆️ Button: Up")
         if (indexv > 0) {
           indexv--
           socket?.emit("navigate", { indexh, indexv })
@@ -194,7 +193,6 @@
         updateInfo()
       })
 
-      // Initial info update
       updateInfo()
     </script>
   </body>

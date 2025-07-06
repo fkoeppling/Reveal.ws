@@ -58,7 +58,7 @@
       })
 
       Reveal.on("slidechanged", (event) => {
-        console.log("🖱️ Slide geändert:", event.indexh, event.indexv)
+        console.log("Slide changed:", event.indexh, event.indexv)
       })
 
       socket.on("getSlideState", () => {
@@ -73,7 +73,7 @@
           maxIndexV = verticals.length - 1
         }
 
-        console.log("📤 presentation slideState:", { maxIndexH, maxIndexV })
+        console.log("presentation slideState:", { maxIndexH, maxIndexV })
 
         socket.emit("slideState", {
           maxIndexH,
