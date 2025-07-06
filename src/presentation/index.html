@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Reveal.js Presentation</title>
+    <link rel="stylesheet" href="/reveal.js/dist/reveal.css" />
+    <link rel="stylesheet" href="/reveal.js/dist/theme/black.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <section>Slide 1.1</section>
+          <section>Slide 1.2</section>
+        </section>
+        <section>Slide 2</section>
+        <section>
+          <section>Slide 3.1</section>
+          <section>Slide 3.2</section>
+          <section>Slide 3.3</section>
+        </section>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/reveal.js/dist/reveal.js"></script>
+    <script>
+      let pendingSlide = null
+      let revealReady = false
+
+      Reveal.initialize({
+        keyboard: false,
+        touch: false,
+        controls: false,
+        progress: false,
+        overview: false,
+      })
+
+      const socket = io()
+
+      // Request current slide on load
+      socket.emit("getCurrentSlide")
+
+      socket.on("navigate", ({ indexh, indexv }) => {
+        if (revealReady) {
+          Reveal.slide(indexh ?? 0, indexv ?? 0)
+        } else {
+          pendingSlide = { indexh, indexv }
+        }
+      })
+
+      Reveal.on("ready", () => {
+        revealReady = true
+        if (pendingSlide) {
+          Reveal.slide(pendingSlide.indexh ?? 0, pendingSlide.indexv ?? 0)
+          pendingSlide = null
+        }
+      })
+
+      Reveal.on("slidechanged", (event) => {
+        console.log("🖱️ Slide geändert:", event.indexh, event.indexv)
+      })
+
+      socket.on("getSlideState", () => {
+        const state = Reveal.getIndices()
+        const slides = Reveal.getSlides()
+        const maxIndexH = Reveal.getTotalSlides() - 1
+
+        let maxIndexV = 0
+        const currentSlide = Reveal.getCurrentSlide()
+        const verticals = currentSlide?.parentNode?.querySelectorAll(":scope > section")
+        if (verticals && verticals.length > 1) {
+          maxIndexV = verticals.length - 1
+        }
+
+        console.log("📤 presentation slideState:", { maxIndexH, maxIndexV })
+
+        socket.emit("slideState", {
+          maxIndexH,
+          maxIndexV,
+        })
+      })
+    </script>
+  </body>
+</html>

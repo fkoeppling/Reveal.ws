@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: #18181b;
+        color: #fff;
+        font-family: 'Inter', Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      body {
+        justify-content: center;
+        align-items: center;
+      }
+      .controller-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2.5rem;
+        width: 100vw;
+        max-width: 420px;
+        margin: auto;
+        padding: 2rem 1rem;
+        box-sizing: border-box;
+      }
+      h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        letter-spacing: -1px;
+        color: #fbbf24;
+        text-shadow: 0 2px 8px #0008;
+      }
+      .button-grid {
+        display: grid;
+        grid-template-columns: 80px 80px 80px;
+        grid-template-rows: 80px 80px;
+        gap: 1.2rem;
+        justify-content: center;
+        align-items: center;
+      }
+      .ctrl-btn {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e42 100%);
+        color: #18181b;
+        font-size: 2.2rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 1.2rem;
+        box-shadow: 0 4px 24px #0004, 0 1.5px 0 #fff3 inset;
+        transition: transform 0.08s, box-shadow 0.08s;
+        cursor: pointer;
+        outline: none;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        touch-action: manipulation;
+      }
+      .ctrl-btn:active {
+        transform: scale(0.96);
+        box-shadow: 0 2px 8px #0006;
+      }
+      .ctrl-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .info-bar {
+        margin-top: 2rem;
+        font-size: 1.1rem;
+        color: #a3a3a3;
+        text-align: center;
+        letter-spacing: 0.02em;
+      }
+      @media (max-width: 500px) {
+        .button-grid {
+          grid-template-columns: 60px 60px 60px;
+          grid-template-rows: 60px 60px;
+          gap: 0.7rem;
+        }
+        .ctrl-btn {
+          font-size: 1.5rem;
+          border-radius: 0.8rem;
+        }
+        h2 {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controller-container">
+      <h2>Präsentation steuern</h2>
+      <div class="button-grid">
+        <div></div>
+        <button class="ctrl-btn" id="upBtn" onclick="up()" aria-label="Hoch">⬆️</button>
+        <div></div>
+        <button class="ctrl-btn" id="prevBtn" onclick="prev()" aria-label="Zurück">⬅️</button>
+        <button class="ctrl-btn" id="downBtn" onclick="down()" aria-label="Runter">⬇️</button>
+        <button class="ctrl-btn" id="nextBtn" onclick="next()" aria-label="Weiter">➡️</button>
+      </div>
+      <div class="info-bar" id="slideInfo">
+        Slide: <span id="slidePos">-</span>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      console.log("🚀 Controller-Skript gestartet")
+
+      let socket
+      try {
+        socket = io()
+        console.log("✅ Socket.IO initialisiert")
+      } catch (err) {
+        console.error("❌ Socket.IO konnte nicht initialisiert werden:", err)
+      }
+
+      let indexh = 0
+      let indexv = 0
+      let maxIndexH = 0
+      let maxIndexV = 0
+
+      function updateInfo() {
+        document.getElementById('slidePos').textContent = `${indexh + 1}.${indexv + 1}`
+        document.getElementById('prevBtn').disabled = indexh <= 0
+        document.getElementById('nextBtn').disabled = indexh >= maxIndexH
+        document.getElementById('upBtn').disabled = indexv <= 0
+        document.getElementById('downBtn').disabled = indexv >= maxIndexV
+      }
+
+      socket?.emit("getSlideState")
+      console.log("📡 SlideState angefragt")
+
+      socket?.on("slideState", (state) => {
+        console.log("📥 Controller erhält slideState:", state)
+        maxIndexH = state.maxIndexH
+        maxIndexV = state.maxIndexV
+        updateInfo()
+      })
+
+      function next() {
+        console.log("➡️ Button: Weiter")
+        if (indexh < maxIndexH) {
+          indexh++
+          indexv = 0
+          socket?.emit("navigate", { indexh, indexv })
+          socket?.emit("getSlideState")
+          updateInfo()
+        }
+      }
+
+      function prev() {
+        console.log("⬅️ Button: Zurück")
+        if (indexh > 0) {
+          indexh--
+          indexv = 0
+          socket?.emit("navigate", { indexh, indexv })
+          socket?.emit("getSlideState")
+          updateInfo()
+        }
+      }
+
+      function down() {
+        console.log("⬇️ Button: Runter")
+        if (indexv < maxIndexV) {
+          indexv++
+          socket?.emit("navigate", { indexh, indexv })
+          updateInfo()
+        }
+      }
+
+      function up() {
+        console.log("⬆️ Button: Hoch")
+        if (indexv > 0) {
+          indexv--
+          socket?.emit("navigate", { indexh, indexv })
+          updateInfo()
+        }
+      }
+
+      socket?.on("navigate", ({ indexh: h, indexv: v }) => {
+        indexh = h
+        indexv = v
+        socket?.emit("getSlideState")
+        updateInfo()
+      })
+
+      // Initial info update
+      updateInfo()
+    </script>
+  </body>
+</html>
