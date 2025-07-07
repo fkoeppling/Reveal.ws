@@ -10,8 +10,8 @@
         position: absolute;
         bottom: 20px;
         left: 20px;
-        width: 20vh; /* Viertel der Höhe → quadratisch */
-        height: 20vh;
+        width: 40vh; /* Viertel der Höhe → quadratisch */
+        height: 40vh;
         box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
         border-radius: 10px;
         overflow: hidden;
@@ -23,15 +23,31 @@
         height: 100%;
         border: none;
       }
+
+      #bg-video {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        min-width: 100%;
+        min-height: 100%;
+        width: auto;
+        height: auto;
+        z-index: -1;
+        transform: translate(-50%, -50%);
+      }
     </style>
   </head>
   <body>
+    <video id="bg-video" autoplay muted loop playsinline>
+      <source src="/public/video_bg.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
     <div id="camera-container">
-      <iframe src="https://vdo.ninja/?view=QGrzWB7&transparent&noaudio&quality=1" allow="camera; microphone; fullscreen" allowfullscreen></iframe>
+      <iframe src="https://vdo.ninja/?view=QGrzWB7&transparent&noaudio&quality=1" allow="camera; fullscreen" allowfullscreen></iframe>
     </div>
     <div class="reveal">
       <div class="slides">
-        <section data-background-color="aquamarine">
+        <section>
           <section>
             <div>Slide 1.1</div>
           </section>

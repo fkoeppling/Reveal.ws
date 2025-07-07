@@ -9,6 +9,7 @@ const server = http.createServer(app)
 const io = socketIo(server)
 
 app.use("/reveal.js", express.static(path.join(__dirname, "../node_modules/reveal.js")))
+app.use("/public", express.static(path.join(__dirname, "../public")))
 
 function controllerAuth(req, res, next) {
   const auth = req.headers.authorization
